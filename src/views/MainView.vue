@@ -37,6 +37,16 @@
 
 .infomain
   grid-area: infomain
+
+@media screen and (max-width: 768px)
+  .main_grid
+    grid-template-areas: "chathead" "chatmain" "chatinput"
+    grid-template-columns: 1fr
+  .menu, .chats, .chats_search, .infohead, .infomain
+    display: none
+
+  .chatmain
+    width: 100vw
 </style>
 
 <template>

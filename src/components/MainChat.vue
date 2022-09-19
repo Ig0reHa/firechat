@@ -1,0 +1,130 @@
+<style scoped lang="sass">
+.message_box
+  width: max-content
+  max-width: 60%
+  &_meta
+    width: fit-content
+    margin-left: auto
+
+.chat_container
+  overflow: auto
+  height: 100%
+  width: 100%
+  padding: 20px
+  &::-webkit-scrollbar
+    display: none
+
+.scroll_down_btn
+  position: absolute
+  right: 28px
+  bottom: 16px
+</style>
+
+<template>
+  <div class="chatmain">
+    <div @scroll="scrollDownCheck" ref="chatContainer" class="chat_container">
+      <v-card
+        v-for="(message, index) in chatMessages"
+        :key="index"
+        color="blue"
+        :class="
+          message.author_id !== user?.id
+            ? 'my-4 pa-3 text-white message_box'
+            : 'ml-auto my-4 pa-3 text-white message_box'
+        "
+      >
+        <div
+          v-if="message.author_id !== user?.id"
+          class="message_box_author mb-1"
+        >
+          Igor
+        </div>
+        <div class="message_box_text">{{ message.text }}</div>
+        <div class="message_box_meta text-blue-lighten-4">
+          {{ formatTime(message.created_at) }}
+        </div>
+      </v-card>
+    </div>
+
+    <v-slide-y-reverse-transition>
+      <v-btn
+        v-if="scrollDownBtn"
+        icon="mdi-chevron-down"
+        color="blue-darken-3"
+        class="scroll_down_btn"
+        @click="scrollDown"
+      ></v-btn>
+    </v-slide-y-reverse-transition>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, nextTick } from 'vue';
+import { useFireChatStore } from '../stores/FireChatStore';
+import { useMainChatStore } from '@/stores/MainChatStore';
+import { supabase } from '@/supabase/init';
+
+const Store = useFireChatStore();
+const ChatStore = useMainChatStore();
+const user = computed(() => Store.getUser);
+
+const chatMessages = ChatStore.getChatMessages;
+const chatContainer = ref<HTMLDivElement | null>(null);
+
+const scrollDownBtn = ref(false);
+
+const Messages = supabase
+  .from('Messages:chat_id=eq.8416ba9a-4f3e-4eef-93a5-b97ac99663c0')
+  .on('INSERT', async (payload) => {
+    if (payload.errors == null) {
+      ChatStore.addMessage(payload.new);
+
+      await nextTick();
+
+      scrollDownNewMsg();
+    }
+  })
+  .subscribe();
+
+const scrollDownCheck = () => {
+  if (!chatContainer.value) return;
+  if (
+    chatContainer.value.scrollHeight - chatContainer.value.scrollTop <
+    chatContainer.value.clientHeight * 2
+  ) {
+    scrollDownBtn.value = false;
+  } else {
+    scrollDownBtn.value = true;
+  }
+};
+
+const scrollDownNewMsg = () => {
+  if (!chatContainer.value) return;
+  if (
+    chatContainer.value.scrollHeight - chatContainer.value.scrollTop <
+    chatContainer.value.clientHeight * 2
+  ) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+  }
+};
+
+// Scroll to bottom
+const scrollDown = () => {
+  if (!chatContainer.value) return;
+  chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+};
+
+const formatTime = (date: string) => {
+  return new Date(date).toLocaleString('en-GB', {
+    timeZone: 'UTC',
+    timeStyle: 'short',
+  });
+};
+
+onMounted(() => {
+  if (chatContainer.value) {
+    scrollDown();
+    chatContainer.value.style.scrollBehavior = 'smooth';
+  }
+});
+</script>

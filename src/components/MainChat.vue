@@ -3,8 +3,11 @@
   width: max-content
   max-width: 60%
   &_meta
-    width: fit-content
-    margin-left: auto
+    font-size: 14px
+    float: right
+    margin-left: 12px
+    position: relative
+    top: 10px
 
 .chat_container
   overflow: auto
@@ -24,6 +27,7 @@
   <div class="chatmain">
     <div @scroll="scrollDownCheck" ref="chatContainer" class="chat_container">
       <v-card
+        v-if="ChatsListStore.chatIsReady"
         v-for="(message, index) in chatMessages"
         :key="index"
         color="blue"
@@ -37,11 +41,13 @@
           v-if="message.author_id !== user?.id"
           class="message_box_author mb-1"
         >
-          Igor
+          {{ chatUsers[message.author_id].name }}
         </div>
-        <div class="message_box_text">{{ message.text }}</div>
-        <div class="message_box_meta text-blue-lighten-4">
-          {{ formatTime(message.created_at) }}
+        <div class="message_box_text">
+          {{ message.text }}
+          <span class="message_box_meta text-blue-lighten-4">
+            {{ formatTime(message.created_at) }}
+          </span>
         </div>
       </v-card>
     </div>
@@ -60,21 +66,25 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
-import { useFireChatStore } from '../stores/FireChatStore';
+import { useFireChatStore } from '@/stores/FireChatStore';
 import { useMainChatStore } from '@/stores/MainChatStore';
+import { useChatsListStore } from '@/stores/ChatListsStore';
 import { supabase } from '@/supabase/init';
 
 const Store = useFireChatStore();
 const ChatStore = useMainChatStore();
+const ChatsListStore = useChatsListStore();
 const user = computed(() => Store.getUser);
 
-const chatMessages = ChatStore.getChatMessages;
+const chatUsers = computed(() => ChatStore.getChatUsers);
+const chatMessages = computed(() => ChatStore.getChatMessages);
+
 const chatContainer = ref<HTMLDivElement | null>(null);
 
 const scrollDownBtn = ref(false);
 
-const Messages = supabase
-  .from('Messages:chat_id=eq.8416ba9a-4f3e-4eef-93a5-b97ac99663c0')
+supabase
+  .from(`Messages:chat_id=eq.${ChatsListStore.getActiveChat?.id}`)
   .on('INSERT', async (payload) => {
     if (payload.errors == null) {
       ChatStore.addMessage(payload.new);

@@ -31,8 +31,9 @@ supabase.auth.onAuthStateChange(async (authEvent, session) => {
 
   if (supabase.auth.user()) {
     await Store.loadUser();
-    await MainChatStore.loadChatMessages();
     await ChatsListStore.loadChatsList();
+    await MainChatStore.loadChatUsers();
+    await MainChatStore.loadChatMessages();
   }
 
   appReady.value = true;

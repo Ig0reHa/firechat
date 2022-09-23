@@ -6,4 +6,15 @@ interface I_ChatMessage {
   created_at: string;
 }
 
-export type { I_ChatMessage };
+interface I_ChatUsers {
+  [key: string]: {
+    id: string;
+    name: string;
+    userName: string;
+    user_id: string;
+    chats: string[];
+    created_at: string;
+  };
+}
+
+export type { I_ChatMessage, I_ChatUsers };

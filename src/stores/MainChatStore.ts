@@ -31,8 +31,6 @@ export const useMainChatStore = defineStore('mainChatStore', () => {
       if (error) throw error;
 
       chatMessages.value = data;
-
-      console.log('loadChatMessages', chatMessages.value);
     } catch (error) {
       console.warn(error);
     }
@@ -53,8 +51,6 @@ export const useMainChatStore = defineStore('mainChatStore', () => {
           [id]: { id, name, userName, user_id, chats, created_at },
         }))
       );
-
-      console.log('loadChatUsers', chatUsers.value);
     } catch (error) {
       console.warn(error);
     }

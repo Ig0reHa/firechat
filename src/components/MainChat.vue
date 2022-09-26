@@ -25,32 +25,38 @@
 
 <template>
   <div class="chatmain">
-    <div @scroll="scrollDownCheck" ref="chatContainer" class="chat_container">
-      <v-card
-        v-if="ChatsListStore.chatIsReady"
-        v-for="(message, index) in chatMessages"
-        :key="index"
-        color="blue"
-        :class="
-          message.author_id !== user?.id
-            ? 'my-4 pa-3 text-white message_box'
-            : 'ml-auto my-4 pa-3 text-white message_box'
-        "
+    <v-scroll-x-transition>
+      <div
+        v-if="chatIsReady"
+        @scroll="scrollDownCheck"
+        ref="chatContainer"
+        class="chat_container"
       >
-        <div
-          v-if="message.author_id !== user?.id"
-          class="message_box_author mb-1"
+        <v-card
+          v-for="(message, index) in chatMessages"
+          :key="index"
+          color="blue"
+          :class="
+            message.author_id !== user?.id
+              ? 'my-4 pa-3 text-white message_box'
+              : 'ml-auto my-4 pa-3 text-white message_box'
+          "
         >
-          {{ chatUsers[message.author_id].name }}
-        </div>
-        <div class="message_box_text">
-          {{ message.text }}
-          <span class="message_box_meta text-blue-lighten-4">
-            {{ formatTime(message.created_at) }}
-          </span>
-        </div>
-      </v-card>
-    </div>
+          <div
+            v-if="message.author_id !== user?.id"
+            class="message_box_author mb-1"
+          >
+            {{ chatUsers[message.author_id].name }}
+          </div>
+          <div class="message_box_text">
+            {{ message.text }}
+            <span class="message_box_meta text-blue-lighten-4">
+              {{ formatTime(message.created_at) }}
+            </span>
+          </div>
+        </v-card>
+      </div>
+    </v-scroll-x-transition>
 
     <v-slide-y-reverse-transition>
       <v-btn
@@ -65,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useFireChatStore } from '@/stores/FireChatStore';
 import { useMainChatStore } from '@/stores/MainChatStore';
 import { useChatsListStore } from '@/stores/ChatListsStore';
@@ -78,10 +84,22 @@ const user = computed(() => Store.getUser);
 
 const chatUsers = computed(() => ChatStore.getChatUsers);
 const chatMessages = computed(() => ChatStore.getChatMessages);
+const chatIsReady = computed(() => ChatsListStore.chatIsReady);
+const activeChat = computed(() => ChatsListStore.getActiveChat);
 
 const chatContainer = ref<HTMLDivElement | null>(null);
 
 const scrollDownBtn = ref(false);
+
+watch(chatIsReady, async () => {
+  await nextTick();
+  scrollDown();
+  if (chatContainer.value) chatContainer.value.style.scrollBehavior = 'smooth';
+});
+
+watch(activeChat, () => {
+  scrollDownBtn.value = false;
+});
 
 supabase
   .from(`Messages:chat_id=eq.${ChatsListStore.getActiveChat?.id}`)
@@ -132,9 +150,7 @@ const formatTime = (date: string) => {
 };
 
 onMounted(() => {
-  if (chatContainer.value) {
-    scrollDown();
-    chatContainer.value.style.scrollBehavior = 'smooth';
-  }
+  scrollDown();
+  if (chatContainer.value) chatContainer.value.style.scrollBehavior = 'smooth';
 });
 </script>

@@ -18,6 +18,7 @@ export const useChatsListStore = defineStore('chatsListStore', () => {
   const getActiveChat = computed(() => activeChat.value);
 
   const setActiveChat = async (chat: I_Chat) => {
+    if (chat === activeChat.value) return;
     chatIsReady.value = false;
 
     activeChat.value = <I_Chat>chatsList.value.find((c) => c.id === chat.id);

@@ -4,8 +4,14 @@
   <div
     class="infohead bg-grey-lighten-5 d-md-flex d-none justify-center align-center"
   >
-    Chat Users
+    Chat Users: {{ Object.keys(chatUsers).length }}
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useMainChatStore } from '@/stores/MainChatStore';
+const MainChatStore = useMainChatStore();
+
+const chatUsers = computed(() => MainChatStore.getChatUsers);
+</script>

@@ -2,7 +2,7 @@
 
 <template>
   <div class="chats">
-    <v-list class="pl-14" shaped>
+    <v-list class="pl-6" shaped>
       <v-list-item
         @click="chatsListStore.setActiveChat(chat)"
         v-for="(chat, i) in chatsList"

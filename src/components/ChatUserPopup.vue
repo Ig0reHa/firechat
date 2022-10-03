@@ -2,7 +2,8 @@
 
 <template>
   <v-overlay
-    v-model="chatUserPopup"
+    v-model="popupIsActive"
+    activator="parent"
     scroll-strategy="block"
     class="align-center justify-center"
   >
@@ -16,39 +17,40 @@
       <tbody>
         <tr>
           <td>Id</td>
-          <td>{{}}</td>
+          <td>{{ user?.id }}</td>
         </tr>
         <tr>
           <td>Name</td>
-          <td>{{}}</td>
+          <td>{{ user?.name }}</td>
         </tr>
         <tr>
           <td>Username</td>
-          <td>@{{}}</td>
+          <td>@{{ user?.userName }}</td>
         </tr>
       </tbody>
+    </v-table>
+    <div class="d-flex justify-space-between bg-white">
       <v-btn
-        @click="chatUserPopup = false"
+        @click="popupIsActive = !popupIsActive"
         color="blue"
         size="small"
         class="ma-4 text-white"
         >Close</v-btn
       >
-    </v-table>
+      <v-btn color="primary" size="small" class="ma-4 text-white"
+        >Send message</v-btn
+      >
+    </div>
   </v-overlay>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useChatsListStore } from '@/stores/ChatListsStore';
+import { ref } from 'vue';
+import type { I_User } from '@/types/User';
 
-const props = defineProps<{
-  foo: string;
-  bar?: number;
+defineProps<{
+  user: I_User | null;
 }>();
 
-const chatsListStore = useChatsListStore();
-const chatsList = computed(() => chatsListStore.getChatsList);
-
-const chatUserPopup = ref(false);
+const popupIsActive = ref(false);
 </script>

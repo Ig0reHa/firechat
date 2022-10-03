@@ -80,8 +80,8 @@ import { supabase } from '@/supabase/init';
 const Store = useFireChatStore();
 const ChatStore = useMainChatStore();
 const ChatsListStore = useChatsListStore();
-const user = computed(() => Store.getUser);
 
+const user = computed(() => Store.getUser);
 const chatUsers = computed(() => ChatStore.getChatUsers);
 const chatMessages = computed(() => ChatStore.getChatMessages);
 const chatIsReady = computed(() => ChatsListStore.chatIsReady);
@@ -91,28 +91,22 @@ const chatContainer = ref<HTMLDivElement | null>(null);
 
 const scrollDownBtn = ref(false);
 
-watch(chatIsReady, async () => {
-  await nextTick();
-  scrollDown();
-  if (chatContainer.value) chatContainer.value.style.scrollBehavior = 'smooth';
-});
+function updateOnNewMessageFunc() {
+  return supabase
+    .from(`Messages:chat_id=eq.${activeChat.value?.id}`)
+    .on('INSERT', async (payload) => {
+      if (payload.errors == null) {
+        ChatStore.addMessage(payload.new);
 
-watch(activeChat, () => {
-  scrollDownBtn.value = false;
-});
+        await nextTick();
 
-supabase
-  .from(`Messages:chat_id=eq.${ChatsListStore.getActiveChat?.id}`)
-  .on('INSERT', async (payload) => {
-    if (payload.errors == null) {
-      ChatStore.addMessage(payload.new);
+        scrollDownNewMsg();
+      }
+    })
+    .subscribe();
+}
 
-      await nextTick();
-
-      scrollDownNewMsg();
-    }
-  })
-  .subscribe();
+let updateOnNewMessage = updateOnNewMessageFunc();
 
 const scrollDownCheck = () => {
   if (!chatContainer.value) return;
@@ -148,6 +142,21 @@ const formatTime = (date: string) => {
     timeStyle: 'short',
   });
 };
+
+watch(chatIsReady, async () => {
+  if (chatIsReady.value !== true) return;
+  await nextTick();
+
+  await supabase.removeSubscription(updateOnNewMessage);
+  updateOnNewMessage = updateOnNewMessageFunc();
+
+  scrollDown();
+  if (chatContainer.value) chatContainer.value.style.scrollBehavior = 'smooth';
+});
+
+watch(activeChat, () => {
+  scrollDownBtn.value = false;
+});
 
 onMounted(() => {
   scrollDown();

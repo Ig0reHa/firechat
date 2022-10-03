@@ -26,7 +26,9 @@ export const useMainChatStore = defineStore('mainChatStore', () => {
       const { data, error } = await supabase
         .from<I_ChatMessage>('Messages')
         .select('*')
-        .eq('chat_id', <string>chatsListStore.getActiveChat?.id);
+        .eq('chat_id', <string>chatsListStore.getActiveChat?.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
 
@@ -44,6 +46,9 @@ export const useMainChatStore = defineStore('mainChatStore', () => {
         .contains('chats', [chatsListStore.getActiveChat?.id]);
 
       if (error) throw error;
+
+      const { data: avatars } = await supabase.storage.getBucket('avatars');
+      console.log(avatars);
 
       chatUsers.value = Object.assign(
         {},

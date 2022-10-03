@@ -11,7 +11,7 @@
       hide-details="auto"
       append-inner-icon="mdi-send"
       @click:append-inner="addMessage"
-      @keypress="addMessageOnEnter"
+      @keypress.enter="addMessage"
     ></v-text-field>
   </div>
 </template>
@@ -28,15 +28,5 @@ const addMessage = () => {
   if (currentMessage.value === '') return;
   ChatStore.sendMessage(currentMessage.value);
   currentMessage.value = '';
-
-  // await nextTick();
-
-  // scrollDown();
-};
-
-const addMessageOnEnter = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    addMessage();
-  }
 };
 </script>

@@ -8,7 +8,7 @@
           <v-list-item-title
             >{{ chatUser.name }} @{{ chatUser.userName }}</v-list-item-title
           >
-          <ChatUserPopup />
+          <ChatUserPopup :user="chatUser" />
         </v-list-item>
       </v-list>
     </v-fade-transition>
@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useMainChatStore } from '@/stores/MainChatStore';
 import { useChatsListStore } from '@/stores/ChatListsStore';
 
@@ -27,6 +27,4 @@ const ChatsListStore = useChatsListStore();
 
 const chatUsers = computed(() => MainChatStore.getChatUsers);
 const chatIsReady = computed(() => ChatsListStore.chatIsReady);
-
-const chatUserPopupActive = ref(false);
 </script>
